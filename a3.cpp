@@ -1,4 +1,5 @@
 // pescoço pra baixo é canela
+// total domination number in trees
 
 #include <bits/stdc++.h>
 
@@ -35,36 +36,40 @@ const ll LINF = 0x3f3f3f3f3f3f3f3fll;
 
 const int MAX = 5000;
 
-#define USED 0
-#define FORBIDDEN 1
+#define BOUND 0
+#define REQUIRED 1
 #define FREE 2
+#define NEEDED 3
 
 int g[MAX][MAX];
-int share_nei[MAX][MAX];
 int N;
+int parent[MAX];
 int status[MAX];
 int id[MAX];
 int nxt;
 
 void bfs(int u){
-    queue<int> q;
-    q.push(u);
+    queue<ii> q;
+    q.push({u, 0});
     while (!q.empty()){
-        auto v = q.front();q.pop();
+        auto [v, p] = q.front();q.pop();
         if (id[v]) continue;
         id[v]=nxt;
         nxt++;
+        parent[id[v]]=id[p];
         for (int j = 1; j <= N; j++){
             if (g[v][j]){
-                q.push(j);
+                q.push({j, v});
             }
         }
     }
 }
 
+
 int main(){ _
     cin >> N;
     memset(id, 0, sizeof id);
+    memset(parent, 0, sizeof parent);
     for (int i = 0; i < N-1; i++){
         int u, v; cin >> u >> v;
         g[u][v]=1;
@@ -73,30 +78,30 @@ int main(){ _
     nxt=1;
     bfs(1);
 
-    for (int i = 1; i <= N; i++){
-        for (int j = 1; j <= N; j++){
-            if (i==j) continue;
-            for (int k = 1; k <= N; k++){
-                if (g[i][k] and g[j][k]){
-                    share_nei[id[i]][id[j]]=1;
-                    share_nei[id[j]][id[i]]=1;
-                }
-            }
+    vi solucao; 
+    memset(status, BOUND, sizeof status);
+    for (int i = N; i >= 2; i--){
+        if (status[i]==BOUND and status[parent[i]]==BOUND){
+            status[parent[i]] = REQUIRED;
+        }
+        else if (status[i]==BOUND and status[parent[i]]==FREE){
+            status[parent[i]] = NEEDED;
+        }
+        else if (status[i]==REQUIRED){
+            status[parent[i]] = NEEDED;
+        }
+        else if (status[i]==NEEDED and status[parent[i]]==BOUND){
+            status[parent[i]] = FREE;
+        }
+        else if (status[i]==NEEDED and status[parent[i]]==REQUIRED){
+            status[parent[i]] = NEEDED;
         }
     }
 
-    vi solucao; 
-    memset(status, FREE, sizeof status);
-    for (int i = N; i >= 1; i--){
-        if (status[i]==USED or status[i]==FORBIDDEN) continue;
-        status[i]=USED;
-        solucao.pb(i); 
-        for (int j = 1; j <= N; j++){
-            if (share_nei[i][j]){
-                status[j]=FORBIDDEN;
-            }
-        }
-    }
+    if (status[1]==REQUIRED or status[1]==BOUND) status[2]=REQUIRED;
+
+    for (int i = 1; i <= N; i++) if (status[i]==NEEDED or status[i]==REQUIRED) solucao.pb(i);
+
     cout << solucao.size() << endl;
     exit(0);
 }

@@ -1,9 +1,9 @@
 P=a
-make ${P} ${P}2 gen || exit 1
+make ${P} ${P}3 gen || exit 1
 for ((i = 1; ; i++)) do
 	./gen $1 > in
 	./${P} < in > out
-	./${P}2 < in > out2
+	./${P}3 < in > out2
 	if (! cmp -s out out2) then
 		echo "--> entrada:"
 		cat in
